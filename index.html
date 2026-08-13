@@ -81,6 +81,40 @@ input::placeholder{color:#9c9aaa}
   .add{width:88px;min-width:88px;font-size:43px}
   .cell{border-width:2px;border-radius:17px}
 }
+
+.photoModal{
+  position:fixed;inset:0;z-index:1000;display:none;
+  align-items:center;justify-content:center;padding:22px;
+  background:rgba(20,17,35,.78);backdrop-filter:blur(8px);
+}
+.photoModal.open{display:flex}
+.photoModalCard{
+  position:relative;width:min(92vw,620px);max-height:90vh;
+  background:#fffaf5;border-radius:24px;padding:12px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+  display:flex;flex-direction:column;gap:10px;
+}
+.photoModal img{
+  width:100%;max-height:78vh;object-fit:contain;border-radius:16px;
+  display:block;background:#f1e9e2;
+}
+.photoModalInfo{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:4px 8px 2px;color:#25233f;font-size:15px;
+}
+.photoModalClose{
+  position:absolute;right:10px;top:10px;width:42px;height:42px;
+  border:0;border-radius:50%;background:rgba(255,255,255,.9);
+  color:#25233f;font-size:28px;line-height:1;z-index:2;
+}
+.cellDate{
+  position:absolute;left:6px;right:6px;bottom:5px;z-index:2;
+  padding:3px 5px;border-radius:9px;text-align:center;
+  font-size:11px;font-weight:700;color:#3b3560;
+  background:rgba(255,250,245,.88);backdrop-filter:blur(3px);
+}
+.cell.hasPhoto .cellDate{color:#252044}
+
 </style>
 </head>
 <body>
@@ -109,6 +143,18 @@ input::placeholder{color:#9c9aaa}
   <div class="bottom">
     <button class="btn" id="more">＋ Ajouter 12 cases</button>
     <button class="btn" id="fit">↺ Vue de base</button>
+  </div>
+</div>
+
+
+<div class="photoModal" id="photoModal" aria-hidden="true">
+  <div class="photoModalCard" role="dialog" aria-modal="true" aria-label="Photo du tatouage">
+    <button class="photoModalClose" id="photoModalClose" type="button" aria-label="Fermer">×</button>
+    <img id="photoModalImg" alt="Tatouage">
+    <div class="photoModalInfo">
+      <strong id="photoModalDate"></strong>
+      <span>Toucher l’image pour fermer</span>
+    </div>
   </div>
 </div>
 
@@ -157,28 +203,87 @@ function apply(){
   board.style.transform=`translate3d(${tx}px,${ty}px,0) scale(${scale})`;
   updateTouchMode();
 }
+function formatDate(ts){
+  if(!ts) return '';
+  return new Intl.DateTimeFormat('fr-FR',{
+    day:'2-digit',month:'2-digit',year:'numeric'
+  }).format(new Date(ts));
+}
 function render(){
   board.innerHTML='';
   for(let i=0;i<total;i++){
     const b=document.createElement('button');
-    b.className='cell';b.type='button';
+    b.className='cell'+(items[i]?.src?' hasPhoto':'');
+    b.type='button';
+
     if(items[i]?.src){
-      const im=document.createElement('img');im.src=items[i].src;im.alt='Tatouage '+(i+1);b.append(im);
+      const im=document.createElement('img');
+      im.src=items[i].src;
+      im.alt='Tatouage '+(i+1);
+      b.append(im);
+
+      const d=document.createElement('span');
+      d.className='cellDate';
+      d.textContent=formatDate(items[i].date || items[i].createdAt) || 'Date inconnue';
+      b.append(d);
     }else{
-      const p=document.createElement('span');p.className='plus';p.textContent='+';b.append(p);
+      const p=document.createElement('span');
+      p.className='plus';
+      p.textContent='+';
+      b.append(p);
     }
+
     b.addEventListener('click',()=>photo(i));
     board.append(b);
   }
-  count.textContent=items.filter(Boolean).length;totalEl.textContent=total;
+  count.textContent=items.filter(Boolean).length;
+  totalEl.textContent=total;
   fit();
 }
+const photoModal=document.querySelector('#photoModal');
+const photoModalImg=document.querySelector('#photoModalImg');
+const photoModalDate=document.querySelector('#photoModalDate');
+const photoModalClose=document.querySelector('#photoModalClose');
+
+function openPhotoViewer(i){
+  const item=items[i];
+  if(!item?.src) return;
+  photoModalImg.src=item.src;
+  photoModalDate.textContent=formatDate(item.date || item.createdAt) || 'Date inconnue';
+  photoModal.classList.add('open');
+  photoModal.setAttribute('aria-hidden','false');
+}
+function closePhotoViewer(){
+  photoModal.classList.remove('open');
+  photoModal.setAttribute('aria-hidden','true');
+  photoModalImg.removeAttribute('src');
+}
+photoModalClose.addEventListener('click',closePhotoViewer);
+photoModal.addEventListener('click',e=>{
+  if(e.target===photoModal || e.target===photoModalImg) closePhotoViewer();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closePhotoViewer();
+});
+
 function photo(i){
-  const f=document.createElement('input');f.type='file';f.accept='image/*';
+  if(items[i]?.src){
+    openPhotoViewer(i);
+    return;
+  }
+
+  const f=document.createElement('input');
+  f.type='file';
+  f.accept='image/*';
   f.onchange=()=>{
     if(!f.files[0])return;
     const r=new FileReader();
-    r.onload=()=>{items[i]={src:r.result};save();render()};
+    r.onload=()=>{
+      const now=Date.now();
+      items[i]={src:r.result,date:now};
+      save();
+      render();
+    };
     r.readAsDataURL(f.files[0]);
   };
   f.click();
