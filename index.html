@@ -102,6 +102,8 @@ input::placeholder{color:#9c9aaa}
   display:flex;align-items:center;justify-content:space-between;
   gap:12px;padding:4px 8px 2px;color:#25233f;font-size:15px;
 }
+.photoModalDelete{width:100%;border:0;border-radius:16px;padding:12px 16px;background:#f0dfe5;color:#8d2944;font-size:15px;font-weight:800}
+.photoModalDelete:active{transform:scale(.99)}
 .photoModalClose{
   position:absolute;right:10px;top:10px;width:42px;height:42px;
   border:0;border-radius:50%;background:rgba(255,255,255,.9);
@@ -150,6 +152,7 @@ input::placeholder{color:#9c9aaa}
 <div class="photoModal" id="photoModal" aria-hidden="true">
   <div class="photoModalCard" role="dialog" aria-modal="true" aria-label="Photo du tatouage">
     <button class="photoModalClose" id="photoModalClose" type="button" aria-label="Fermer">×</button>
+    <button class="photoModalDelete" id="photoModalDelete" type="button">Supprimer la photo</button>
     <img id="photoModalImg" alt="Tatouage">
     <div class="photoModalInfo">
       <strong id="photoModalDate"></strong>
@@ -244,8 +247,11 @@ const photoModal=document.querySelector('#photoModal');
 const photoModalImg=document.querySelector('#photoModalImg');
 const photoModalDate=document.querySelector('#photoModalDate');
 const photoModalClose=document.querySelector('#photoModalClose');
+const photoModalDelete=document.querySelector('#photoModalDelete');
+let viewingPhotoIndex=-1;
 
 function openPhotoViewer(i){
+  viewingPhotoIndex=i;
   const item=items[i];
   if(!item?.src) return;
   photoModalImg.src=item.src;
@@ -257,8 +263,17 @@ function closePhotoViewer(){
   photoModal.classList.remove('open');
   photoModal.setAttribute('aria-hidden','true');
   photoModalImg.removeAttribute('src');
+  viewingPhotoIndex=-1;
 }
 photoModalClose.addEventListener('click',closePhotoViewer);
+photoModalDelete.addEventListener('click',()=>{
+  if(viewingPhotoIndex<0 || !items[viewingPhotoIndex]?.src) return;
+  if(!confirm('Supprimer cette photo du tatouage ?')) return;
+  items[viewingPhotoIndex]=null;
+  save();
+  closePhotoViewer();
+  render();
+});
 photoModal.addEventListener('click',e=>{
   if(e.target===photoModal || e.target===photoModalImg) closePhotoViewer();
 });
