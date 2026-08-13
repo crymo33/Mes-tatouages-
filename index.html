@@ -16,9 +16,10 @@ body{
     radial-gradient(circle at 97% 57%,#ffd4ea 0 70px,transparent 71px),
     linear-gradient(135deg,#fffafd,#eaf7ff);
 }
-.app{max-width:900px;margin:auto;padding:12px 12px 35px}
+.app{max-width:none;margin:0;padding:12px 0 35px}
 
 /* En-tête beaucoup plus petit */
+.top,.search,.boardTitle,.bottom{margin-left:12px;margin-right:12px}
 .top{display:flex;gap:10px;align-items:stretch}
 .title{
   flex:1;background:#fff;border:2px solid #d6e8f6;border-radius:20px;
@@ -48,24 +49,26 @@ input::placeholder{color:#aeb8c0}
 
 /* Pas de texte explicatif inutile */
 .boardTitle{
-  margin:11px 2px 7px;font-size:18px;font-weight:800;color:#4c7896
+  margin:11px 14px 7px;font-size:18px;font-weight:800;color:#4c7896
 }
 
-/* Le plateau est VISIBLE immédiatement sur l'accueil */
+/* Le plateau fait partie directement de l'accueil : aucun cadre autour. */
 .boardViewport{
-  position:relative;width:100%;height:520px;overflow:hidden;
-  border-radius:22px;background:rgba(255,255,255,.38);
-  border:2px solid #c6e2f4;touch-action:none;
+  position:relative;width:100vw;height:calc(100vh - 270px);min-height:560px;
+  margin-left:calc(50% - 50vw);
+  overflow:hidden;background:transparent;
+  border:0;border-radius:0;touch-action:none;
 }
 .board{
   position:absolute;left:0;top:0;
-  width:510px;
-  display:grid;grid-template-columns:repeat(6,78px);gap:7px;
+  width:100vw;
+  display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;
+  padding:0 5px;
   transform-origin:0 0;
 }
 .cell{
-  width:78px;height:91px;padding:0;border:2px dashed #9ecde9;
-  border-radius:15px;background:linear-gradient(145deg,#fff,#eefaff);
+  width:auto;height:auto;aspect-ratio:0.86;padding:0;border:2px dashed #9ecde9;
+  border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(238,250,255,.9));
   overflow:hidden;position:relative;
 }
 .cell img{width:100%;height:100%;object-fit:cover;display:block}
@@ -147,12 +150,15 @@ function photo(i){
 }
 function fit(){
  const cols=6,rows=Math.ceil(total/cols);
- const bw=6*78+5*7;
- const bh=rows*91+(rows-1)*7;
- scale=Math.min((vp.clientWidth-10)/bw,(vp.clientHeight-10)/bh);
- scale=Math.max(.2,Math.min(scale,1));
- tx=(vp.clientWidth-bw*scale)/2;
- ty=(vp.clientHeight-bh*scale)/2;
+ const bw=vp.clientWidth-10;
+ const cellW=(bw-(cols-1)*5)/cols;
+ const cellH=cellW/0.86;
+ const bh=rows*cellH+(rows-1)*5;
+ /* Le plateau est calibré sur l'écran, pas sur un cadre fixe. */
+ scale=Math.min(1,(vp.clientHeight-12)/bh);
+ scale=Math.max(.2,scale);
+ tx=5;
+ ty=6;
  apply();
 }
 function apply(){board.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`}
