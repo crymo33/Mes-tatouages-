@@ -178,15 +178,22 @@ function clampPosition(){
  ty=Math.min(0,Math.max(minY,ty));
 }
 
+function updateTouchMode(){
+ // À 100% : le geste vertical sur les cases doit faire défiler toute la page.
+ // Au-delà de 100% : le geste sur les cases sert à déplacer le plateau.
+ vp.style.touchAction = (scale <= 1.0001) ? 'pan-y' : 'none';
+}
+
 function apply(){
  clampPosition();
  vp.style.touchAction = scale<=1.0001 ? "pan-y" : "none";
  board.style.transform=`translate3d(${tx}px,${ty}px,0) scale(${scale})`;
 }
 
+// Zoom maximum 6x : une seule carte remplit presque toute la largeur de l'écran.
 function zoomAt(next,x,y){
  const old=scale;
- next=Math.max(1,Math.min(3,next));
+ next=Math.max(1,Math.min(6,next));
 
  if(next===1){
   scale=1;tx=0;ty=0;apply();return;
@@ -244,7 +251,7 @@ vp.addEventListener('touchmove',e=>{
    e.touches[0].clientX-e.touches[1].clientX,
    e.touches[0].clientY-e.touches[1].clientY
   );
-  scale=Math.max(1,Math.min(3,pinchScale*d/pinch));
+  scale=Math.max(1,Math.min(6,pinchScale*d/pinch));
   if(scale<=1.0001){tx=0;ty=0}
   apply();
  }
