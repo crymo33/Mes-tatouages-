@@ -8,11 +8,11 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;overflow-x:hidden}
-html{background:#f7efe7}
+html{background:#252235}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   color:#25233f;
-  background:#f7efe7;
+  background:#252235;
   position:relative;
   isolation:isolate;
 }
@@ -246,7 +246,7 @@ function render(){
         ? new Intl.DateTimeFormat('fr-FR',{
             day:'2-digit',month:'2-digit',year:'numeric'
           }).format(new Date(items[i].date+'T12:00:00'))
-        : 'Date ?';
+        : 'Date non renseignée';
       b.append(d);
     }else{
       const p=document.createElement('span');
