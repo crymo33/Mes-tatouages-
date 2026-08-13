@@ -56,6 +56,8 @@ input::placeholder{color:#9c9aaa}
   touch-action:pan-y;
 }
 .board{
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
   position:relative;left:0;top:0;width:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;
   padding:0 10px;transform-origin:top left;will-change:transform;z-index:2;
 }
@@ -106,7 +108,7 @@ input::placeholder{color:#9c9aaa}
 
   <div class="bottom">
     <button class="btn" id="more">＋ Ajouter 12 cases</button>
-    <button class="btn" id="fit">↺ Voir tout</button>
+    <button class="btn" id="fit">↺ Vue de base</button>
   </div>
 </div>
 
@@ -115,7 +117,8 @@ const board=document.querySelector('#board'),vp=document.querySelector('#vp');
 const count=document.querySelector('#count'),totalEl=document.querySelector('#total');
 let total=60;
 let items=JSON.parse(localStorage.getItem('tattooItems')||'[]');
-let scale=1,tx=0,ty=0;
+const BASE_ZOOM=1.25;
+let scale=BASE_ZOOM,tx=0,ty=0;
 let drag=false,sx=0,sy=0,ox=0,oy=0;
 let pinchStart=0,pinchScale=1;
 
@@ -131,6 +134,7 @@ function getMetrics(){
 }
 function maxZoom(){
   // À fond, une seule carte occupe toute la largeur du plateau.
+  // Le plateau démarre à BASE_ZOOM pour afficher des cases plus grandes.
   const m=getMetrics();
   return Math.max(1,m.bw/m.cellW);
 }
@@ -182,7 +186,7 @@ function photo(i){
 function fit(){
   const m=getMetrics();
   vp.style.height=m.bh+'px';
-  scale=1;tx=0;ty=0;apply();
+  scale=BASE_ZOOM;tx=0;ty=0;apply();
 }
 function zoomAt(next,x,y){
   const old=scale;
