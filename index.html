@@ -16,26 +16,15 @@ body{
   position:relative;
   isolation:isolate;
 }
-/* Fond décoratif : uniquement en arrière-plan, jamais au-dessus du plateau. */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-2;
-  pointer-events:none;
-  background-color:#f7efe7;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 1800'%3E%3Crect width='900' height='1800' fill='%23f7efe7'/%3E%3Cg fill='none' stroke='%237b6b70' stroke-width='2.2' opacity='.18' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M55 150c35-35 72-35 105 0-33 12-65 12-105 0z M108 105v90 M75 130l68 40 M75 170l68-40'/%3E%3Cpath d='M780 105c22-34 54-50 82-48-15 29-35 48-82 48z M820 78l-35 70 M816 96l-36-18'/%3E%3Cpath d='M62 520l22-72 22 72-22 72z M84 450v145 M62 510h44'/%3E%3Cpath d='M770 500c-52-40-67 34-18 62 49 28 68 88 13 120-55 31-97-29-68-66 20-26 56-22 65 2'/%3E%3Cpath d='M60 960c45-54 104-47 133 0-29 42-89 54-133 0z M126 930c-12 55-33 79-66 95 M126 930c17 50 39 72 67 88 M105 958c-28 8-47 7-68 2 M105 958c25 7 43 7 65 0'/%3E%3Cpath d='M786 920c0-46 0-78 0-120 M786 840c-32 14-54 34-63 59 27 4 48-7 63-28 M786 840c30 11 51 29 64 54-27 6-47-3-64-23'/%3E%3Cpath d='M50 1330c28-28 57-28 85 0-28 10-56 10-85 0z M92 1288v85 M64 1308l57 45 M64 1353l57-45'/%3E%3Cpath d='M770 1330c28-28 57-28 85 0-28 10-56 10-85 0z M812 1288v85 M784 1308l57 45 M784 1353l57-45'/%3E%3Cpath d='M455 1600c-58-62-6-119 45-82 51-37 103 20 45 82-24 25-64 47-90 62-26-15-66-37-90-62z'/%3E%3Cpath d='M438 1670c-30-44-18-79 18-105 36 26 48 61 18 105-10 14-24 24-18 42 M462 1565c30 26 42 61 18 105'/%3E%3Cpath d='M160 340l12 28 30 3-23 20 7 30-26-16-27 16 8-30-24-20 30-3z M680 320l9 21 23 2-17 15 5 22-20-12-20 12 5-22-17-15 23-2z M430 1260l8 19 21 2-16 14 5 21-18-11-18 11 5-21-16-14 21-2z'/%3E%3Ccircle cx='270' cy='720' r='22'/%3E%3Cpath d='M270 687v66 M237 720h66'/%3E%3Ccircle cx='650' cy='720' r='22'/%3E%3Cpath d='M650 687v66 M617 720h66'/%3E%3C/g%3E%3Cg fill='%237b6b70' opacity='.13'%3E%3Ccircle cx='145' cy='240' r='3'/%3E%3Ccircle cx='360' cy='280' r='4'/%3E%3Ccircle cx='570' cy='180' r='3'/%3E%3Ccircle cx='710' cy='390' r='4'/%3E%3Ccircle cx='210' cy='1150' r='3'/%3E%3Ccircle cx='690' cy='1150' r='3'/%3E%3Ccircle cx='350' cy='1450' r='4'/%3E%3Ccircle cx='590' cy='1500' r='3'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:900px 1800px;
-  background-position:center top;
+/* Fond uni : aucun motif décoratif en arrière-plan. */
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:#25233f;
+  background:#f7efe7;
+  position:relative;
+  isolation:isolate;
 }
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,250,246,.16),rgba(255,250,246,.08));
-}
+
 .app{width:100%;margin:0;padding:18px 14px 34px;position:relative;z-index:1}
 .top,.search,.bottom{width:100%;max-width:760px;margin-left:auto;margin-right:auto}
 .top{display:flex;gap:12px;align-items:stretch}
