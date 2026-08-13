@@ -82,40 +82,48 @@ input::placeholder{color:#9c9aaa}
   .cell{border-width:2px;border-radius:17px}
 }
 
+
 .photoModal{
   position:fixed;inset:0;z-index:1000;display:none;
-  align-items:center;justify-content:center;padding:22px;
-  background:rgba(20,17,35,.78);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:16px;
+  background:rgba(20,17,35,.82);backdrop-filter:blur(8px);
 }
 .photoModal.open{display:flex}
 .photoModalCard{
-  position:relative;width:min(92vw,620px);max-height:88vh;overflow:auto;
+  position:relative;width:min(94vw,620px);max-height:88vh;overflow:auto;
   background:#fffaf5;border-radius:24px;padding:12px;
   box-shadow:0 20px 60px rgba(0,0,0,.3);
-  display:flex;flex-direction:column;gap:10px;
 }
 .photoModal img{
-  width:100%;max-height:62vh;object-fit:contain;border-radius:16px;
-  display:block;background:#f1e9e2;
+  width:100%;max-height:60vh;object-fit:contain;
+  border-radius:16px;display:block;background:#f1e9e2;
+}
+.photoModalClose{
+  position:absolute;right:18px;top:18px;width:46px;height:46px;
+  border:0;border-radius:50%;background:#fff;color:#25233f;
+  font-size:30px;line-height:1;z-index:5;
+  box-shadow:0 3px 12px rgba(0,0,0,.15);
+}
+.photoModalDelete{
+  width:100%;margin-top:12px;border:0;border-radius:16px;
+  padding:14px 16px;background:#d94b63;color:#fff;
+  font-size:16px;font-weight:800;display:block;
 }
 .photoModalInfo{
   display:flex;align-items:center;justify-content:space-between;
-  gap:12px;padding:4px 8px 2px;color:#25233f;font-size:15px;
+  gap:12px;padding:12px 6px 4px;color:#25233f;font-size:15px;
 }
-.photoModalDelete{width:100%;border:0;border-radius:16px;padding:13px 16px;background:#f0dfe5;color:#8d2944;font-size:16px;font-weight:800;display:block;cursor:pointer}
-.photoModalDelete:active{transform:scale(.99)}
-.photoModalClose{
-  position:absolute;right:10px;top:10px;width:42px;height:42px;
-  border:0;border-radius:50%;background:rgba(255,255,255,.9);
-  color:#25233f;font-size:28px;line-height:1;z-index:2;
+.dateEdit{
+  margin-top:12px;display:flex;gap:8px;align-items:center;
 }
-.cellDate{
-  position:absolute;left:6px;right:6px;bottom:5px;z-index:2;
-  padding:3px 5px;border-radius:9px;text-align:center;
-  font-size:11px;font-weight:700;color:#3b3560;
-  background:rgba(255,250,245,.88);backdrop-filter:blur(3px);
+.dateEdit input{
+  flex:1;border:1px solid rgba(111,82,211,.25);border-radius:12px;
+  background:#fff;padding:10px;font-size:15px;
 }
-.cell.hasPhoto .cellDate{color:#252044}
+.dateSave{
+  border:0;border-radius:12px;padding:10px 13px;
+  background:#5845d8;color:#fff;font-weight:800;
+}
 
 </style>
 </head>
@@ -149,15 +157,22 @@ input::placeholder{color:#9c9aaa}
 </div>
 
 
+
+
+
 <div class="photoModal" id="photoModal" aria-hidden="true">
-  <div class="photoModalCard" role="dialog" aria-modal="true" aria-label="Photo du tatouage">
+  <div class="photoModalCard" role="dialog" aria-modal="true">
     <button class="photoModalClose" id="photoModalClose" type="button" aria-label="Fermer">×</button>
-    <button class="photoModalDelete" id="photoModalDelete" type="button">Supprimer la photo</button>
     <img id="photoModalImg" alt="Tatouage">
     <div class="photoModalInfo">
-      <strong id="photoModalDate"></strong>
-      <span>Toucher l’image pour fermer</span>
+      <strong id="photoModalDate">Date non renseignée</strong>
+      <span>Photo du tatouage</span>
     </div>
+    <div class="dateEdit">
+      <input id="photoDateInput" type="date" aria-label="Date du tatouage">
+      <button class="dateSave" id="dateSave" type="button">Enregistrer</button>
+    </div>
+    <button class="photoModalDelete" id="photoModalDelete" type="button">🗑 Supprimer cette photo</button>
   </div>
 </div>
 
@@ -227,7 +242,11 @@ function render(){
 
       const d=document.createElement('span');
       d.className='cellDate';
-      d.textContent=formatDate(items[i].date || items[i].createdAt) || 'Date inconnue';
+      d.textContent=items[i].date
+        ? new Intl.DateTimeFormat('fr-FR',{
+            day:'2-digit',month:'2-digit',year:'numeric'
+          }).format(new Date(items[i].date+'T12:00:00'))
+        : 'Date ?';
       b.append(d);
     }else{
       const p=document.createElement('span');
@@ -243,50 +262,85 @@ function render(){
   totalEl.textContent=total;
   fit();
 }
+
 const photoModal=document.querySelector('#photoModal');
 const photoModalImg=document.querySelector('#photoModalImg');
 const photoModalDate=document.querySelector('#photoModalDate');
 const photoModalClose=document.querySelector('#photoModalClose');
 const photoModalDelete=document.querySelector('#photoModalDelete');
+const photoDateInput=document.querySelector('#photoDateInput');
+const dateSave=document.querySelector('#dateSave');
 let viewingPhotoIndex=-1;
 
+function formatDate(ts){
+  if(!ts) return '';
+  return new Intl.DateTimeFormat('fr-FR',{
+    day:'2-digit',month:'2-digit',year:'numeric'
+  }).format(new Date(ts));
+}
+
 function openPhotoViewer(i){
-  viewingPhotoIndex=i;
   const item=items[i];
   if(!item?.src) return;
+  viewingPhotoIndex=i;
   photoModalImg.src=item.src;
-  photoModalDate.textContent=formatDate(item.date || item.createdAt) || 'Date inconnue';
+
+  // The date is NEVER generated automatically.
+  photoDateInput.value=item.date || '';
+  photoModalDate.textContent=item.date
+    ? 'Date : '+new Intl.DateTimeFormat('fr-FR',{
+        day:'2-digit',month:'2-digit',year:'numeric'
+      }).format(new Date(item.date+'T12:00:00'))
+    : 'Date non renseignée';
+
   photoModal.classList.add('open');
   photoModal.setAttribute('aria-hidden','false');
 }
+
 function closePhotoViewer(){
   photoModal.classList.remove('open');
   photoModal.setAttribute('aria-hidden','true');
   photoModalImg.removeAttribute('src');
   viewingPhotoIndex=-1;
 }
+
 photoModalClose.addEventListener('click',closePhotoViewer);
+
+photoModal.addEventListener('click',e=>{
+  if(e.target===photoModal) closePhotoViewer();
+});
+
+dateSave.addEventListener('click',()=>{
+  if(viewingPhotoIndex<0 || !items[viewingPhotoIndex]?.src) return;
+  const value=photoDateInput.value;
+  items[viewingPhotoIndex].date=value || null;
+  save();
+  openPhotoViewer(viewingPhotoIndex);
+  render();
+});
+
 photoModalDelete.addEventListener('click',()=>{
   if(viewingPhotoIndex<0 || !items[viewingPhotoIndex]?.src) return;
-  if(!confirm('Supprimer cette photo du tatouage ?')) return;
+  if(!confirm('Supprimer cette photo ?')) return;
+
   items[viewingPhotoIndex]=null;
   save();
   closePhotoViewer();
   render();
 });
-photoModal.addEventListener('click',e=>{
-  if(e.target===photoModal || e.target===photoModalImg) closePhotoViewer();
-});
+
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape') closePhotoViewer();
 });
 
 function photo(i){
+  // Existing photo: open it with date editing + DELETE button.
   if(items[i]?.src){
     openPhotoViewer(i);
     return;
   }
 
+  // Empty cell: choose a photo. NO date is assigned here.
   const f=document.createElement('input');
   f.type='file';
   f.accept='image/*';
@@ -294,10 +348,11 @@ function photo(i){
     if(!f.files[0])return;
     const r=new FileReader();
     r.onload=()=>{
-      const now=Date.now();
-      items[i]={src:r.result,date:now};
+      items[i]={src:r.result,date:null};
       save();
       render();
+      // Open the new photo immediately so its date can be entered manually.
+      openPhotoViewer(i);
     };
     r.readAsDataURL(f.files[0]);
   };
