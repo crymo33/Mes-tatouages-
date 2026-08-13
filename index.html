@@ -52,7 +52,9 @@ input::placeholder{color:#aeb8c0}
   position:relative;width:100vw;
   margin:8px 0 0;
   overflow:hidden;background:transparent;
-  border:0;border-radius:0;touch-action:none;
+  border:0;border-radius:0;
+  /* À 100 %, le doigt peut faire défiler toute la page depuis le plateau. */
+  touch-action:pan-y;
 }
 .board{
   position:relative;left:0;top:0;
@@ -151,6 +153,7 @@ function fit(){
  scale=1;
  tx=0;
  ty=0;
+ vp.style.touchAction="pan-y";
  apply();
 }
 function clampPosition(){
@@ -177,6 +180,7 @@ function clampPosition(){
 
 function apply(){
  clampPosition();
+ vp.style.touchAction = scale<=1.0001 ? "pan-y" : "none";
  board.style.transform=`translate3d(${tx}px,${ty}px,0) scale(${scale})`;
 }
 
@@ -200,12 +204,16 @@ document.querySelector('#addOne').onclick=()=>{total++;render()};
 window.addEventListener('resize',fit);
 
 vp.addEventListener('pointerdown',e=>{
- if(scale<=1.0001)return;
+ if(scale<=1.0001){
+  drag=false;
+  return;
+ }
  drag=true;sx=e.clientX;sy=e.clientY;ox=tx;oy=ty;
  vp.setPointerCapture(e.pointerId);
 });
 vp.addEventListener('pointermove',e=>{
  if(!drag)return;
+ e.preventDefault();
  tx=ox+e.clientX-sx;
  ty=oy+e.clientY-sy;
  apply();
